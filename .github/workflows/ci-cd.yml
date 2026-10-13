@@ -33,75 +33,103 @@ jobs:
       - name: Build da imagem docker
         run: docker build -t gestao-residuos-esg .
 
-  # deploy em staging: o Render faz o deploy automatico da branch staging
+  # staging: sobe app + postgres com docker compose no proprio runner e testa
   deploy-staging:
     needs: build-e-testes
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    environment:
-      name: staging
-      url: ${{ vars.STAGING_URL }}
+    environment: staging
     steps:
       - name: Checkout do codigo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Atualizar branch staging
-        run: git push origin HEAD:staging --force
+      - name: Criar arquivo de ambiente
+        run: cp .env.staging.example .env.staging
 
-      - name: Smoke test em staging
-        env:
-          STAGING_URL: ${{ vars.STAGING_URL }}
+      - name: Subir ambiente de staging
+        run: docker compose -f docker-compose.staging.yml up -d --build
+
+      - name: Esperar a aplicação subir
         run: |
-          # espera o Render terminar o build antes de conferir
-          sleep 90
-          for i in $(seq 1 20); do
-            if curl -fsS "$STAGING_URL/actuator/health"; then
+          for i in $(seq 1 30); do
+            if curl -fsS localhost:8081/actuator/health; then
               echo ""
-              echo "Staging respondeu ok"
+              echo "Aplicacao no ar"
               exit 0
             fi
-            echo "Tentativa $i falhou, esperando 30s..."
-            sleep 30
+            echo "Tentativa $i, esperando 5s..."
+            sleep 5
           done
-          echo "Staging nao respondeu"
+          echo "Aplicacao nao subiu"
           exit 1
 
-  # deploy em producao: precisa de aprovacao manual no environment production
+      - name: Testar login na API
+        run: |
+          RESPOSTA=$(curl -fsS -X POST localhost:8081/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email": "admin@fiap.com", "senha": "admin123"}')
+          echo "$RESPOSTA" | cut -c1-60
+          echo "$RESPOSTA" | grep -q token
+
+      - name: Mostrar containers
+        run: docker compose -f docker-compose.staging.yml ps
+
+      - name: Logs da aplicação
+        run: docker compose -f docker-compose.staging.yml logs app | tail -n 40
+
+      - name: Derrubar ambiente
+        if: always()
+        run: docker compose -f docker-compose.staging.yml down -v
+
+  # producao: mesma coisa, mas so roda depois da aprovacao manual no environment production
   deploy-producao:
     needs: deploy-staging
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    environment:
-      name: production
-      url: ${{ vars.PRODUCTION_URL }}
+    environment: production
     steps:
       - name: Checkout do codigo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Atualizar branch release
-        run: git push origin HEAD:release --force
-
-      - name: Smoke test em producao
+      # em producao as senhas vem dos secrets do repositorio, nao do arquivo de exemplo
+      - name: Criar arquivo de ambiente
         env:
-          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          PROD_JWT_SECRET: ${{ secrets.PROD_JWT_SECRET }}
         run: |
-          # espera o Render terminar o build antes de conferir
-          sleep 90
-          for i in $(seq 1 20); do
-            if curl -fsS "$PRODUCTION_URL/actuator/health"; then
+          printf "DB_USER=residuos_prod\nDB_PASSWORD=%s\nPOSTGRES_USER=residuos_prod\nPOSTGRES_PASSWORD=%s\nJWT_SECRET=%s\nJWT_EXPIRATION=86400000\n" \
+            "$PROD_DB_PASSWORD" "$PROD_DB_PASSWORD" "$PROD_JWT_SECRET" > .env.prod
+
+      - name: Subir ambiente de producao
+        run: docker compose -f docker-compose.prod.yml up -d --build
+
+      - name: Esperar a aplicação subir
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS localhost:8080/actuator/health; then
               echo ""
-              echo "Producao respondeu ok"
+              echo "Aplicacao no ar"
               exit 0
             fi
-            echo "Tentativa $i falhou, esperando 30s..."
-            sleep 30
+            echo "Tentativa $i, esperando 5s..."
+            sleep 5
           done
-          echo "Producao nao respondeu"
+          echo "Aplicacao nao subiu"
           exit 1
+
+      - name: Testar login na API
+        run: |
+          RESPOSTA=$(curl -fsS -X POST localhost:8080/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email": "admin@fiap.com", "senha": "admin123"}')
+          echo "$RESPOSTA" | cut -c1-60
+          echo "$RESPOSTA" | grep -q token
+
+      - name: Mostrar containers
+        run: docker compose -f docker-compose.prod.yml ps
+
+      - name: Logs da aplicação
+        run: docker compose -f docker-compose.prod.yml logs app | tail -n 40
+
+      - name: Derrubar ambiente
+        if: always()
+        run: docker compose -f docker-compose.prod.yml down -v

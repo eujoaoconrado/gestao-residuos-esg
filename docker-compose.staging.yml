@@ -1,0 +1,39 @@
+# Ambiente de staging (usado pelo pipeline)
+name: residuos-staging
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: residuos-staging-db
+    env_file: .env.staging
+    environment:
+      POSTGRES_DB: residuos
+    volumes:
+      - postgres_data_staging:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d residuos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - residuos-staging-net
+
+  app:
+    build: .
+    container_name: residuos-staging-app
+    env_file: .env.staging
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/residuos
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8081:8080"
+    networks:
+      - residuos-staging-net
+
+volumes:
+  postgres_data_staging:
+
+networks:
+  residuos-staging-net:

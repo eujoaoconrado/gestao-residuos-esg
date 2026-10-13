@@ -25,3 +25,5 @@ logs/
 
 # Variaveis de ambiente
 .env
+.env.staging
+.env.prod

@@ -1,0 +1,39 @@
+# Ambiente de producao (usado pelo pipeline)
+name: residuos-prod
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: residuos-prod-db
+    env_file: .env.prod
+    environment:
+      POSTGRES_DB: residuos
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d residuos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - residuos-prod-net
+
+  app:
+    build: .
+    container_name: residuos-prod-app
+    env_file: .env.prod
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/residuos
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - residuos-prod-net
+
+volumes:
+  postgres_data_prod:
+
+networks:
+  residuos-prod-net:
