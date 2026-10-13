@@ -71,6 +71,16 @@ jobs:
           echo "$RESPOSTA" | cut -c1-60
           echo "$RESPOSTA" | grep -q token
 
+      # usa o token para chamar um endpoint protegido e ver se o seed do postgres foi lido
+      - name: Testar endpoint com token
+        run: |
+          TOKEN=$(curl -fsS -X POST localhost:8081/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email": "admin@fiap.com", "senha": "admin123"}' | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+          EMPRESAS=$(curl -fsS -H "Authorization: Bearer $TOKEN" localhost:8081/empresas)
+          echo "$EMPRESAS" | grep -q EcoBrasil
+          echo "Endpoint /empresas respondeu com os dados do seed"
+
       - name: Mostrar containers
         run: docker compose -f docker-compose.staging.yml ps
 
@@ -123,6 +133,16 @@ jobs:
             -d '{"email": "admin@fiap.com", "senha": "admin123"}')
           echo "$RESPOSTA" | cut -c1-60
           echo "$RESPOSTA" | grep -q token
+
+      # usa o token para chamar um endpoint protegido e ver se o seed do postgres foi lido
+      - name: Testar endpoint com token
+        run: |
+          TOKEN=$(curl -fsS -X POST localhost:8080/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email": "admin@fiap.com", "senha": "admin123"}' | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+          EMPRESAS=$(curl -fsS -H "Authorization: Bearer $TOKEN" localhost:8080/empresas)
+          echo "$EMPRESAS" | grep -q EcoBrasil
+          echo "Endpoint /empresas respondeu com os dados do seed"
 
       - name: Mostrar containers
         run: docker compose -f docker-compose.prod.yml ps

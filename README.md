@@ -1,4 +1,6 @@
-# Projeto - Gestão de Resíduos e Reciclagem (ESG)
+# Projeto - Cidades ESGInteligentes
+
+## Gestão de Resíduos e Reciclagem (ESG)
 
 **Integrante:** João Paulo Conrado Silva - RM 562593
 
@@ -88,10 +90,12 @@ Os testes usam o perfil `test`, com banco H2 em memória.
 
 A pipeline fica em `.github/workflows/ci-cd.yml` e roda no **GitHub Actions**. Ela dispara em todo push e pull request para a branch `main`. Os ambientes de staging e produção são criados pelo próprio pipeline, dentro do runner do GitHub, usando Docker Compose.
 
+Uma limitação que precisa ficar clara: os ambientes de staging e produção são efêmeros. Eles sobem no runner do GitHub Actions com Docker Compose, são testados (health check, login e um endpoint com token) e são derrubados no fim do job. Não existe servidor público nem URL para acessar depois. Cada ambiente constrói a imagem a partir do mesmo commit. Escolhi esse formato para não depender de servidor pago.
+
 O fluxo tem três jobs, um depois do outro:
 
 1. **build-e-testes**: faz o checkout, configura o Java 17, roda `mvn -B verify` (compila e executa os testes automatizados), guarda o `.jar` como artefato e faz o `docker build` da imagem para garantir que o Dockerfile está funcionando. Em pull request a pipeline para aqui.
-2. **deploy-staging** (automático): só roda em push na `main` e depois que os testes passaram. Cria o `.env.staging` a partir do exemplo, sobe o ambiente com `docker compose -f docker-compose.staging.yml up -d --build`, espera a API responder em `/actuator/health`, testa o login do admin, mostra os containers e os logs da aplicação e no final derruba tudo.
+2. **deploy-staging** (automático): só roda em push na `main` e depois que os testes passaram. Cria o `.env.staging` a partir do exemplo, sobe o ambiente com `docker compose -f docker-compose.staging.yml up -d --build`, espera a API responder em `/actuator/health`, testa o login do admin, chama `/empresas` com o token para conferir que os dados do Postgres foram lidos, mostra os containers e os logs da aplicação e no final derruba tudo.
 3. **deploy-producao** (com aprovação manual): roda depois do staging e usa o environment `production` do GitHub, que tem *required reviewers*. O job fica parado até alguém aprovar. Depois faz os mesmos passos com o `docker-compose.prod.yml`, mas o `.env.prod` é montado com as senhas guardadas nos secrets do repositório, e não com valores fixos.
 
 Cada ambiente sobe a aplicação e um Postgres isolados, com containers, volume, rede e variáveis próprios:
@@ -136,7 +140,7 @@ O Dockerfile é multi-stage. O primeiro estágio usa a imagem do Maven com JDK 1
 
 ## Prints do funcionamento
 
-Run do pipeline usado nos prints: https://github.com/eujoaoconrado/gestao-residuos-esg/actions/runs/38474803117
+Runs usados nos prints: #1 (primeira execução, https://github.com/eujoaoconrado/gestao-residuos-esg/actions/runs/38469841023) e #2 (https://github.com/eujoaoconrado/gestao-residuos-esg/actions/runs/38474803117)
 
 ### Pipeline rodando no GitHub Actions
 
@@ -146,7 +150,7 @@ Pipeline completo, com os três jobs concluídos.
 
 ![Job build-e-testes](docs/prints/07-build-testes.jpg)
 
-Job build-e-testes: `mvn verify` com os testes passando e build da imagem Docker.
+Job build-e-testes do run 2: passo Build e testes aberto, mostrando `Tests run: 4, Failures: 0` e BUILD SUCCESS.
 
 ![Pipeline aguardando aprovação](docs/prints/01-pipeline-aguardando-aprovacao.jpg)
 
@@ -162,7 +166,9 @@ Deploy de produção aprovado manualmente no environment `production`.
 
 ![Log do staging](docs/prints/03-staging-log.jpg)
 
-Log do job de staging: health check, login e containers no ar.
+Log do job no GitHub Actions com os passos Esperar a aplicação subir, Testar login na API e Mostrar containers abertos.
+
+Log exportado do job (trecho):
 
 ```text
 {"status":"UP"}
@@ -179,7 +185,9 @@ residuos-staging-db    postgres:16-alpine     "docker-entrypoint.s…"   db     
 
 ![Log da produção](docs/prints/04-producao-log.jpg)
 
-Log do job de produção: health check, login e containers no ar.
+Log do job no GitHub Actions com os passos Esperar a aplicação subir, Testar login na API e Mostrar containers abertos.
+
+Log exportado do job (trecho):
 
 ```text
 {"status":"UP"}

@@ -23,6 +23,8 @@ O projeto é a API de gestão de resíduos e reciclagem feita na Fase 3 (Spring 
 
 Os ambientes de staging e produção sobem dentro do próprio runner do GitHub Actions com Docker Compose. Cada um tem a aplicação e um Postgres próprios.
 
+Uma limitação que precisa ficar clara: os ambientes de staging e produção são efêmeros. Eles sobem no runner do GitHub Actions com Docker Compose, são testados (health check, login e um endpoint com token) e são derrubados no fim do job. Não existe servidor público nem URL para acessar depois. Cada ambiente constrói a imagem a partir do mesmo commit. Escolhi esse formato para não depender de servidor pago.
+
 ### Job 1: build-e-testes
 
 Roda em `ubuntu-latest`. Passos:
@@ -42,9 +44,10 @@ Só roda em push na `main` (`if: github.ref == 'refs/heads/main'`), depois do jo
 3. **Subir ambiente de staging**: `docker compose -f docker-compose.staging.yml up -d --build`.
 4. **Esperar a aplicação subir**: chama `curl -fsS localhost:8081/actuator/health` até 30 vezes, com 5 segundos de intervalo. Se não responder, o job falha.
 5. **Testar login na API**: faz `POST /auth/login` com o usuário `admin@fiap.com` e confere com `grep` se a resposta tem o campo `token`.
-6. **Mostrar containers**: `docker compose -f docker-compose.staging.yml ps`.
-7. **Logs da aplicação**: últimas 40 linhas do log do container da API.
-8. **Derrubar ambiente**: `docker compose -f docker-compose.staging.yml down -v`. Tem `if: always()`, então roda mesmo se algum passo falhar.
+6. **Testar endpoint com token**: faz o login de novo, pega o token da resposta e chama `GET /empresas` com `Authorization: Bearer`. Confere com `grep` se veio a empresa `EcoBrasil`, que é do seed do Flyway, para garantir que a API leu os dados do Postgres.
+7. **Mostrar containers**: `docker compose -f docker-compose.staging.yml ps`.
+8. **Logs da aplicação**: últimas 40 linhas do log do container da API.
+9. **Derrubar ambiente**: `docker compose -f docker-compose.staging.yml down -v`. Tem `if: always()`, então roda mesmo se algum passo falhar.
 
 ### Job 3: deploy-producao
 
@@ -116,25 +119,25 @@ ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 
 ## 3. Prints do pipeline rodando (build, testes, deploy)
 
-Run do pipeline usado nos prints: <https://github.com/eujoaoconrado/gestao-residuos-esg/actions/runs/38474803117>
+Runs usados nos prints: #1 (primeira execução, <https://github.com/eujoaoconrado/gestao-residuos-esg/actions/runs/38469841023>) e #2 (<https://github.com/eujoaoconrado/gestao-residuos-esg/actions/runs/38474803117>)
 
 ![Pipeline com build e staging concluídos, aguardando a aprovação de produção](prints/01-pipeline-aguardando-aprovacao.jpg){width=600px}
 
 ![Pipeline completo, com os três jobs concluídos](prints/06-pipeline-completo.jpg){width=600px}
 
-![Job build-e-testes: mvn verify com os testes passando e build da imagem](prints/07-build-testes.jpg){width=600px}
+![Job build-e-testes do run 2: passo Build e testes aberto, mostrando `Tests run: 4, Failures: 0` e BUILD SUCCESS](prints/07-build-testes.jpg){width=600px}
 
 ## 4. Prints dos ambientes staging e produção funcionando
 
-![Log do deploy em staging: health, login e containers no ar](prints/03-staging-log.jpg){width=600px}
+![Staging. Log do job no GitHub Actions com os passos Esperar a aplicação subir, Testar login na API e Mostrar containers abertos](prints/03-staging-log.jpg){width=600px}
 
-![Log do deploy em produção: health, login e containers no ar](prints/04-producao-log.jpg){width=600px}
+![Produção. Log do job no GitHub Actions com os passos Esperar a aplicação subir, Testar login na API e Mostrar containers abertos](prints/04-producao-log.jpg){width=600px}
 
 ![Aprovação manual do deploy em produção no GitHub](prints/02-aprovacao-producao.jpg){width=600px}
 
 ![Swagger da API rodando localmente com Docker Compose](prints/05-swagger-local.jpg){width=600px}
 
-Trecho do log do job de staging (health check, login e containers):
+Log exportado do job (trecho):
 
 ```text
 {"status":"UP"}
@@ -149,11 +152,13 @@ residuos-staging-db    postgres:16-alpine     "docker-entrypoint.s…"   db     
 
 ## 5. Desafios encontrados e como foram resolvidos
 
-**Secrets criados depois do pipeline começar.** No primeiro run, o build, os testes e o staging passaram, mas o deploy de produção falhou. Eu cadastrei os secrets `PROD_DB_PASSWORD` e `PROD_JWT_SECRET` poucos segundos depois do push. O GitHub montou o run antes de os secrets existirem, então o job de produção recebeu as variáveis vazias. O `.env.prod` ficou com a senha em branco e o Postgres não sobe sem senha. Para resolver, re-executei o job de produção já com os secrets cadastrados, aprovei de novo e o ambiente subiu. A lição foi cadastrar os secrets antes de fazer o push.
+**Secrets criados depois do pipeline começar.** No primeiro run, o build, os testes e o staging passaram, mas o deploy de produção falhou. Eu cadastrei os secrets `PROD_DB_PASSWORD` e `PROD_JWT_SECRET` poucos segundos depois do push. O GitHub montou o run antes de os secrets existirem, então o job de produção recebeu as variáveis vazias. O `.env.prod` ficou com a senha em branco e o Postgres não sobe sem senha. Para resolver, re-executei o job de produção já com os secrets cadastrados, aprovei de novo e o ambiente subiu. A lição foi cadastrar os secrets antes de fazer o push. Para não repetir o problema, o passo que monta o `.env.prod` poderia validar se a variável veio vazia e parar com uma mensagem clara.
 
 **Troca do Oracle pelo PostgreSQL.** O projeto da Fase 3 usava Oracle XE. A imagem do Oracle XE tem uns 2 GB e demora para subir, o que não cabe bem no runner gratuito do GitHub, onde staging e produção sobem a cada deploy. Troquei para o PostgreSQL 16 (imagem alpine, bem menor): mudei o driver no `pom.xml`, o dialeto no `application.yml` e reescrevi as migrations do Flyway (`NUMBER` virou `BIGINT`/`NUMERIC`, `VARCHAR2` virou `VARCHAR` e `SYSTIMESTAMP` virou `CURRENT_TIMESTAMP`). O resto do código não precisou mudar.
 
 **Lombok não compilava no JDK 25.** A minha máquina tem o JDK 25 como padrão e o Lombok 1.18.34 do projeto não funciona com ele, então o `mvn verify` falhava na compilação. Como o projeto é Java 17, fixei o `JAVA_HOME` no JDK 17 para rodar o Maven localmente. No pipeline e no Dockerfile isso não acontece, porque os dois já usam imagens com Java 17.
+
+**Projeto sem testes.** O projeto original não tinha nenhum teste automatizado. Criei 4 testes de fumaça com banco H2 em memória (a aplicação sobe, login do admin, endpoint protegido sem token e health check). Como os testes usam H2, as migrations do Postgres só são exercitadas no smoke test de staging e produção.
 
 ## 6. Checklist de entrega
 

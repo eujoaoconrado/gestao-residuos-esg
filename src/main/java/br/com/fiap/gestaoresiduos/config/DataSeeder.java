@@ -27,7 +27,7 @@ public class DataSeeder implements CommandLineRunner {
             admin.setSenha(passwordEncoder.encode("admin123"));
             admin.setRole(Role.ADMIN);
             usuarioRepository.save(admin);
-            log.info("Usuario admin criado: admin@fiap.com / admin123");
+            log.info("Usuario admin criado: admin@fiap.com");
         }
 
         if (!usuarioRepository.existsByEmail("user@fiap.com")) {
@@ -37,7 +37,7 @@ public class DataSeeder implements CommandLineRunner {
             user.setSenha(passwordEncoder.encode("user123"));
             user.setRole(Role.USER);
             usuarioRepository.save(user);
-            log.info("Usuario padrao criado: user@fiap.com / user123");
+            log.info("Usuario padrao criado: user@fiap.com");
         }
     }
 }
