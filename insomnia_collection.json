@@ -1,0 +1,450 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-05-25T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "wrk_gestao_residuos",
+      "_type": "workspace",
+      "name": "Gestao Residuos ESG - FIAP",
+      "description": "Microsservico ESG de gestao de residuos. Atividade Fase 3 Cap 8 - FIAP",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_gestao_residuos",
+      "name": "Base Environment",
+      "data": {
+        "baseUrl": "http://localhost:8080",
+        "token": ""
+      },
+      "isPrivate": false
+    },
+    {
+      "_id": "env_local",
+      "_type": "environment",
+      "parentId": "env_base",
+      "name": "Local",
+      "data": {
+        "baseUrl": "http://localhost:8080",
+        "token": ""
+      },
+      "isPrivate": false
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "parentId": "wrk_gestao_residuos",
+      "name": "Auth",
+      "description": "Endpoints publicos de autenticacao"
+    },
+    {
+      "_id": "req_auth_register",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "POST /auth/register",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/register",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Joao Paulo\",\n  \"email\": \"joao@fiap.com\",\n  \"senha\": \"senha123\",\n  \"role\": \"USER\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ]
+    },
+    {
+      "_id": "req_auth_login",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "POST /auth/login (admin)",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"admin@fiap.com\",\n  \"senha\": \"admin123\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ]
+    },
+    {
+      "_id": "req_auth_login_user",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "POST /auth/login (user)",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"user@fiap.com\",\n  \"senha\": \"user123\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ]
+    },
+    {
+      "_id": "fld_empresas",
+      "_type": "request_group",
+      "parentId": "wrk_gestao_residuos",
+      "name": "Empresas"
+    },
+    {
+      "_id": "req_empresas_list",
+      "_type": "request",
+      "parentId": "fld_empresas",
+      "name": "GET /empresas",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/empresas?page=0&size=10",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_empresas_get",
+      "_type": "request",
+      "parentId": "fld_empresas",
+      "name": "GET /empresas/{id}",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/empresas/1",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_empresas_post",
+      "_type": "request",
+      "parentId": "fld_empresas",
+      "name": "POST /empresas",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/empresas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Recicla Brasil ME\",\n  \"cnpj\": \"11.222.333/0001-44\",\n  \"endereco\": \"Rua Verde, 123 - SP\",\n  \"telefone\": \"(11) 5555-4444\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_empresas_put",
+      "_type": "request",
+      "parentId": "fld_empresas",
+      "name": "PUT /empresas/{id}",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/empresas/1",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"EcoBrasil Reciclagem LTDA\",\n  \"cnpj\": \"12.345.678/0001-90\",\n  \"endereco\": \"Av. Paulista, 2000 - SP\",\n  \"telefone\": \"(11) 4002-9000\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_empresas_delete",
+      "_type": "request",
+      "parentId": "fld_empresas",
+      "name": "DELETE /empresas/{id}",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/empresas/3",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "fld_pontos",
+      "_type": "request_group",
+      "parentId": "wrk_gestao_residuos",
+      "name": "Pontos de Coleta"
+    },
+    {
+      "_id": "req_pontos_list",
+      "_type": "request",
+      "parentId": "fld_pontos",
+      "name": "GET /pontos-coleta",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/pontos-coleta?page=0&size=10",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_pontos_get",
+      "_type": "request",
+      "parentId": "fld_pontos",
+      "name": "GET /pontos-coleta/{id}",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/pontos-coleta/1",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_pontos_alertas",
+      "_type": "request",
+      "parentId": "fld_pontos",
+      "name": "GET /pontos-coleta/alertas",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/pontos-coleta/alertas",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_pontos_post",
+      "_type": "request",
+      "parentId": "fld_pontos",
+      "name": "POST /pontos-coleta",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/pontos-coleta",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Ecoponto Oeste\",\n  \"endereco\": \"Av. Paulista, 1500 - SP\",\n  \"tipoResiduo\": \"PLASTICO\",\n  \"capacidadeMaximaKg\": 500.00,\n  \"nivelAtualKg\": 0.00,\n  \"empresaId\": 1\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_pontos_put",
+      "_type": "request",
+      "parentId": "fld_pontos",
+      "name": "PUT /pontos-coleta/{id}",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/pontos-coleta/1",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Ecoponto Centro Atualizado\",\n  \"endereco\": \"Rua XV de Novembro, 100\",\n  \"tipoResiduo\": \"PLASTICO\",\n  \"capacidadeMaximaKg\": 600.00,\n  \"nivelAtualKg\": 480.00,\n  \"empresaId\": 1\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_pontos_delete",
+      "_type": "request",
+      "parentId": "fld_pontos",
+      "name": "DELETE /pontos-coleta/{id}",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/pontos-coleta/5",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "fld_residuos",
+      "_type": "request_group",
+      "parentId": "wrk_gestao_residuos",
+      "name": "Residuos"
+    },
+    {
+      "_id": "req_residuos_list",
+      "_type": "request",
+      "parentId": "fld_residuos",
+      "name": "GET /residuos",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/residuos?page=0&size=10",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_residuos_get",
+      "_type": "request",
+      "parentId": "fld_residuos",
+      "name": "GET /residuos/{id}",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/residuos/1",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_residuos_por_tipo",
+      "_type": "request",
+      "parentId": "fld_residuos",
+      "name": "GET /residuos/por-tipo/PLASTICO",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/residuos/por-tipo/PLASTICO",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_residuos_post",
+      "_type": "request",
+      "parentId": "fld_residuos",
+      "name": "POST /residuos",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/residuos",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"tipo\": \"PLASTICO\",\n  \"descricao\": \"PET coletado em escolas\",\n  \"pesoKg\": 35.50,\n  \"pontoColetaId\": 1\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_residuos_put",
+      "_type": "request",
+      "parentId": "fld_residuos",
+      "name": "PUT /residuos/{id}",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/residuos/1",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"tipo\": \"PLASTICO\",\n  \"descricao\": \"PET coletado em escolas e empresas\",\n  \"pesoKg\": 60.00,\n  \"pontoColetaId\": 1\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_residuos_delete",
+      "_type": "request",
+      "parentId": "fld_residuos",
+      "name": "DELETE /residuos/{id}",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/residuos/5",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "fld_coletas",
+      "_type": "request_group",
+      "parentId": "wrk_gestao_residuos",
+      "name": "Coletas"
+    },
+    {
+      "_id": "req_coletas_list",
+      "_type": "request",
+      "parentId": "fld_coletas",
+      "name": "GET /coletas",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/coletas?page=0&size=10",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_coletas_get",
+      "_type": "request",
+      "parentId": "fld_coletas",
+      "name": "GET /coletas/{id}",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/coletas/1",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_coletas_historico",
+      "_type": "request",
+      "parentId": "fld_coletas",
+      "name": "GET /coletas/historico/{empresaId}",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/coletas/historico/1?page=0&size=20",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_coletas_post",
+      "_type": "request",
+      "parentId": "fld_coletas",
+      "name": "POST /coletas",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/coletas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"dataColeta\": \"2026-06-10T10:00:00\",\n  \"pesoTotalKg\": 0,\n  \"status\": \"AGENDADA\",\n  \"pontoColetaId\": 1,\n  \"observacoes\": \"Coleta avulsa cadastrada via API\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_coletas_agendar",
+      "_type": "request",
+      "parentId": "fld_coletas",
+      "name": "POST /coletas/agendar",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/coletas/agendar",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"dataColeta\": \"2026-06-15T14:00:00\",\n  \"pontoColetaId\": 3,\n  \"observacoes\": \"Coleta urgente do ponto sul (proximo do cheio)\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_coletas_realizar",
+      "_type": "request",
+      "parentId": "fld_coletas",
+      "name": "PUT /coletas/{id}/realizar",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/coletas/3/realizar",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_coletas_put",
+      "_type": "request",
+      "parentId": "fld_coletas",
+      "name": "PUT /coletas/{id}",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/coletas/1",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"dataColeta\": \"2026-06-20T10:00:00\",\n  \"pesoTotalKg\": 350.00,\n  \"status\": \"REALIZADA\",\n  \"pontoColetaId\": 1,\n  \"observacoes\": \"Coleta atualizada\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_coletas_delete",
+      "_type": "request",
+      "parentId": "fld_coletas",
+      "name": "DELETE /coletas/{id}",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/coletas/5",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "fld_indicadores",
+      "_type": "request_group",
+      "parentId": "wrk_gestao_residuos",
+      "name": "Indicadores"
+    },
+    {
+      "_id": "req_indicadores_reciclagem",
+      "_type": "request",
+      "parentId": "fld_indicadores",
+      "name": "GET /indicadores/reciclagem",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/indicadores/reciclagem",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+target/
+.idea/
+.vscode/
+*.iml
+*.log
+.git/
+.gitignore
+.DS_Store
+README.md
+insomnia_collection.json

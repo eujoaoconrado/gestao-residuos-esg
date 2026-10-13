@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: gestao-residuos-esg
+
+  datasource:
+    url: ${ORACLE_URL:jdbc:oracle:thin:@//localhost:1521/XEPDB1}
+    username: ${ORACLE_USER:system}
+    password: ${ORACLE_PASSWORD:oracle}
+    driver-class-name: oracle.jdbc.OracleDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect
+        format_sql: true
+        jdbc:
+          time_zone: America/Sao_Paulo
+    show-sql: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# Configuracao do JWT
+jwt:
+  secret: ${JWT_SECRET:Z2VzdGFvLXJlc2lkdW9zLWVzZy1zZWNyZXQta2V5LXBhcmEtZmlhcC1mYXNlMy1jYXAtOA==}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+# Swagger
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    br.com.fiap.gestaoresiduos: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
