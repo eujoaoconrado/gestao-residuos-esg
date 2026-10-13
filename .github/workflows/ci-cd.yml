@@ -56,6 +56,8 @@ jobs:
         env:
           STAGING_URL: ${{ vars.STAGING_URL }}
         run: |
+          # espera o Render terminar o build antes de conferir
+          sleep 90
           for i in $(seq 1 20); do
             if curl -fsS "$STAGING_URL/actuator/health"; then
               echo ""
@@ -90,6 +92,8 @@ jobs:
         env:
           PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
         run: |
+          # espera o Render terminar o build antes de conferir
+          sleep 90
           for i in $(seq 1 20); do
             if curl -fsS "$PRODUCTION_URL/actuator/health"; then
               echo ""
