@@ -6,11 +6,23 @@
 
 Microsserviço REST em Spring Boot que gerencia pontos de coleta seletiva, resíduos e coletas, com alerta quando um ponto chega a 80% da capacidade e indicadores de reciclagem. O projeto veio da Fase 3 e nesta fase foi adaptado para rodar em containers e ter uma pipeline de CI/CD com deploy em staging e produção.
 
-Uma mudança importante: o projeto original usava **Oracle XE**. Troquei para **PostgreSQL** porque a imagem do Oracle XE ocupa uns 2 GB por container e não cabe nos ambientes gratuitos de deploy. As migrations do Flyway foram reescritas para o dialeto do Postgres e o resto do código (controllers, services, repositories) continuou igual.
+Uma mudança importante: o projeto original usava **Oracle XE**. Troquei para **PostgreSQL** porque a imagem do Oracle XE ocupa uns 2 GB por container e deixaria o pipeline pesado e lento, já que staging e produção sobem dentro do runner gratuito do GitHub. As migrations do Flyway foram reescritas para o dialeto do Postgres e o resto do código (controllers, services, repositories) continuou igual.
 
 ## Como executar localmente com Docker
 
 Pré-requisito: Docker Desktop instalado e rodando.
+
+O projeto tem três arquivos de compose, um para cada ambiente:
+
+| Arquivo | Ambiente | Porta da API | Arquivo de variáveis |
+|---------|----------|--------------|----------------------|
+| `docker-compose.yml` | Local (desenvolvimento) | 8080 | `.env` |
+| `docker-compose.staging.yml` | Staging | 8081 | `.env.staging` |
+| `docker-compose.prod.yml` | Produção | 8080 | `.env.prod` |
+
+Cada arquivo de variáveis tem um `.example` versionado. Os arquivos de verdade ficam no `.gitignore`.
+
+### Ambiente local
 
 1. Copie o arquivo de variáveis de ambiente:
 
@@ -51,6 +63,19 @@ Usuários criados na subida:
 
 Para parar: `docker compose down` (ou `docker compose down -v` para apagar também os dados do banco).
 
+### Ambiente de staging na própria máquina
+
+Dá para subir o mesmo ambiente que o pipeline usa em staging:
+
+```bash
+cp .env.staging.example .env.staging
+docker compose -f docker-compose.staging.yml up --build
+```
+
+A API fica em `http://localhost:8081` (health em `http://localhost:8081/actuator/health`). Como os containers, o volume e a rede têm nomes próprios, ele pode rodar junto com o ambiente local. Para derrubar: `docker compose -f docker-compose.staging.yml down -v`.
+
+### Testes
+
 Para rodar só os testes, sem Docker (precisa de Java 17 e Maven):
 
 ```bash
@@ -61,27 +86,25 @@ Os testes usam o perfil `test`, com banco H2 em memória.
 
 ## Pipeline CI/CD
 
-A pipeline fica em `.github/workflows/ci-cd.yml` e roda no **GitHub Actions**. Ela dispara em todo push e pull request para a branch `main`.
+A pipeline fica em `.github/workflows/ci-cd.yml` e roda no **GitHub Actions**. Ela dispara em todo push e pull request para a branch `main`. Os ambientes de staging e produção são criados pelo próprio pipeline, dentro do runner do GitHub, usando Docker Compose.
 
-Etapas:
+O fluxo tem três jobs, um depois do outro:
 
 1. **build-e-testes**: faz o checkout, configura o Java 17, roda `mvn -B verify` (compila e executa os testes automatizados), guarda o `.jar` como artefato e faz o `docker build` da imagem para garantir que o Dockerfile está funcionando. Em pull request a pipeline para aqui.
-2. **deploy-staging**: só roda em push na `main` e depois que os testes passaram. Ele atualiza a branch `staging` com o commit da main. O Render está configurado para fazer deploy automático dessa branch. Depois o job faz um smoke test chamando `/actuator/health` até 20 vezes, com 30 segundos de intervalo.
-3. **deploy-producao**: roda depois do staging. Usa o environment `production` do GitHub, que tem aprovação manual, então o job fica esperando alguém aprovar. Depois de aprovado ele atualiza a branch `release`, que é a branch de produção no Render, e faz o mesmo smoke test.
+2. **deploy-staging** (automático): só roda em push na `main` e depois que os testes passaram. Cria o `.env.staging` a partir do exemplo, sobe o ambiente com `docker compose -f docker-compose.staging.yml up -d --build`, espera a API responder em `/actuator/health`, testa o login do admin, mostra os containers e os logs da aplicação e no final derruba tudo.
+3. **deploy-producao** (com aprovação manual): roda depois do staging e usa o environment `production` do GitHub, que tem *required reviewers*. O job fica parado até alguém aprovar. Depois faz os mesmos passos com o `docker-compose.prod.yml`, mas o `.env.prod` é montado com as senhas guardadas nos secrets do repositório, e não com valores fixos.
 
-Ambientes:
+Cada ambiente sobe a aplicação e um Postgres isolados, com containers, volume, rede e variáveis próprios:
 
-| Ambiente | Branch | Onde roda | Banco |
-|----------|--------|-----------|-------|
-| Local | qualquer | Docker Compose | Postgres em container |
-| Staging | `staging` | Render (web service com Docker) | Postgres do Render |
-| Produção | `release` | Render (web service com Docker) | Postgres do Render |
+| Ambiente | Compose | Containers | Volume | Rede | Variáveis |
+|----------|---------|------------|--------|------|-----------|
+| Local | `docker-compose.yml` | `gestao-residuos-db` / `gestao-residuos-app` | `postgres_data` | `residuos-net` | `.env` |
+| Staging | `docker-compose.staging.yml` | `residuos-staging-db` / `residuos-staging-app` | `postgres_data_staging` | `residuos-staging-net` | `.env.staging` |
+| Produção | `docker-compose.prod.yml` | `residuos-prod-db` / `residuos-prod-app` | `postgres_data_prod` | `residuos-prod-net` | `.env.prod` (secrets) |
 
-Configuração feita fora do código:
-- **GitHub**: environments `staging` e `production` (o de produção com *required reviewers*) e as variáveis `STAGING_URL` e `PRODUCTION_URL` com a URL de cada serviço no Render.
-- **Render**: um web service para cada ambiente, apontando para a branch certa, com auto-deploy ligado e as variáveis `DB_URL`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET` e `JWT_EXPIRATION`. O `DB_URL` tem que estar no formato JDBC (`jdbc:postgresql://host:5432/banco`).
-
-A pipeline não usa nenhum segredo além do `GITHUB_TOKEN` padrão, porque o deploy é feito pelo próprio Render quando a branch muda.
+Configuração feita no GitHub (fora do código):
+- Environments `staging` e `production`. No `production` foi marcada a opção *required reviewers* para ter a aprovação manual.
+- Secrets `PROD_DB_PASSWORD` (senha do banco de produção) e `PROD_JWT_SECRET` (chave do JWT em Base64, com pelo menos 32 bytes).
 
 ## Containerização
 
@@ -121,11 +144,11 @@ O Dockerfile é multi-stage. O primeiro estágio usa a imagem do Maven com JDK 1
 
 (print será adicionado)
 
-### Staging no Swagger
+### Ambiente de staging (health e login)
 
 (print será adicionado)
 
-### Produção no Swagger
+### Ambiente de produção (health e login)
 
 (print será adicionado)
 
@@ -151,7 +174,7 @@ O Dockerfile é multi-stage. O primeiro estágio usa a imagem do Maven com JDK 1
 | Build | Maven |
 | Container | Docker + Docker Compose |
 | CI/CD | GitHub Actions |
-| Deploy | Render |
+| Deploy | Docker Compose no runner do GitHub Actions |
 
 ## Endpoints da API
 
