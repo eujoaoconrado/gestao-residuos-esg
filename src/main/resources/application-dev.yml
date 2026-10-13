@@ -1,9 +1,9 @@
 # Perfil DEV: roda com H2 em memoria para testes locais sem Docker.
-# A entrega oficial usa application.yml com Oracle.
+# A entrega oficial usa application.yml com Postgres.
 
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=Oracle;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
     username: sa
     password:
     driver-class-name: org.h2.Driver

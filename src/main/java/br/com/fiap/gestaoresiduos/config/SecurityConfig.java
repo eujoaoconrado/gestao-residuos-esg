@@ -36,6 +36,8 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        // health check do actuator (usado no deploy)
+                        .requestMatchers("/actuator/health").permitAll()
                         // DELETE so para ADMIN
                         .requestMatchers(HttpMethod.DELETE, "/**").hasRole("ADMIN")
                         // POST e PUT so para ADMIN nos recursos principais

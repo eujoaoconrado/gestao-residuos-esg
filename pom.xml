@@ -49,28 +49,30 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- Oracle Driver -->
+        <!-- Actuator (health check usado no deploy) -->
         <dependency>
-            <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc11</artifactId>
-            <version>23.4.0.24.05</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- H2 (apenas para perfil dev de testes locais) -->
+        <!-- Postgres Driver -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- H2 (perfil dev e testes automatizados) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Flyway -->
+        <!-- Flyway (na versao 9 do Spring Boot 3.2 o suporte a Postgres ja vem no core) -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-oracle</artifactId>
         </dependency>
 
         <!-- JWT -->
