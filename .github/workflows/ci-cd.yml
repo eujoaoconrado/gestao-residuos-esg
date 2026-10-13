@@ -1,0 +1,103 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # roda os testes, gera o jar e testa o build da imagem docker
+  build-e-testes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build e testes
+        run: mvn -B verify
+
+      - name: Guardar o jar gerado
+        uses: actions/upload-artifact@v4
+        with:
+          name: gestao-residuos-esg-jar
+          path: target/*.jar
+
+      - name: Build da imagem docker
+        run: docker build -t gestao-residuos-esg .
+
+  # deploy em staging: o Render faz o deploy automatico da branch staging
+  deploy-staging:
+    needs: build-e-testes
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_URL }}
+    steps:
+      - name: Checkout do codigo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Atualizar branch staging
+        run: git push origin HEAD:staging --force
+
+      - name: Smoke test em staging
+        env:
+          STAGING_URL: ${{ vars.STAGING_URL }}
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fsS "$STAGING_URL/actuator/health"; then
+              echo ""
+              echo "Staging respondeu ok"
+              exit 0
+            fi
+            echo "Tentativa $i falhou, esperando 30s..."
+            sleep 30
+          done
+          echo "Staging nao respondeu"
+          exit 1
+
+  # deploy em producao: precisa de aprovacao manual no environment production
+  deploy-producao:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+    steps:
+      - name: Checkout do codigo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Atualizar branch release
+        run: git push origin HEAD:release --force
+
+      - name: Smoke test em producao
+        env:
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fsS "$PRODUCTION_URL/actuator/health"; then
+              echo ""
+              echo "Producao respondeu ok"
+              exit 0
+            fi
+            echo "Tentativa $i falhou, esperando 30s..."
+            sleep 30
+          done
+          echo "Producao nao respondeu"
+          exit 1
