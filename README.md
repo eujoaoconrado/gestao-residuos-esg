@@ -1,117 +1,159 @@
-# Gestao de Residuos e Reciclagem (ESG)
+# Projeto - Gestão de Resíduos e Reciclagem (ESG)
 
-Microsservico RESTful desenvolvido em Spring Boot 3 para a atividade da **FIAP - Fase 3 - Frameworks Java - Cap 8 (Microsservicos com Spring)**.
+**Integrante:** João Paulo Conrado Silva - RM 562593
 
-## Tema ESG
+**FIAP - Fase 6 - DevOps**
 
-**Gestao de Residuos e Reciclagem** (pilar Environmental).
+Microsserviço REST em Spring Boot que gerencia pontos de coleta seletiva, resíduos e coletas, com alerta quando um ponto chega a 80% da capacidade e indicadores de reciclagem. O projeto veio da Fase 3 e nesta fase foi adaptado para rodar em containers e ter uma pipeline de CI/CD com deploy em staging e produção.
 
-O sistema gerencia pontos de coleta seletiva, registra residuos depositados, agenda e realiza coletas, alem de gerar alertas automaticos quando um ponto de coleta atinge 80% da capacidade. Tambem fornece indicadores agregados de reciclagem para apoiar tomada de decisao.
+Uma mudança importante: o projeto original usava **Oracle XE**. Troquei para **PostgreSQL** porque a imagem do Oracle XE ocupa uns 2 GB por container e não cabe nos ambientes gratuitos de deploy. As migrations do Flyway foram reescritas para o dialeto do Postgres e o resto do código (controllers, services, repositories) continuou igual.
 
-## Integrante
+## Como executar localmente com Docker
 
-- **Joao Paulo Conrado Silva**
-- **Grupo:** 118
-- **RM:** 562593
+Pré-requisito: Docker Desktop instalado e rodando.
 
-## Stack utilizada
-
-| Camada | Tecnologia |
-|--------|------------|
-| Linguagem | Java 17 |
-| Framework | Spring Boot 3.2 |
-| Web | Spring Web (REST) |
-| Persistencia | Spring Data JPA + Hibernate |
-| Banco de dados | Oracle XE 21 (driver ojdbc11) |
-| Migracoes | Flyway |
-| Seguranca | Spring Security + JWT (jjwt) |
-| Validacao | Bean Validation (Hibernate Validator) |
-| Documentacao | SpringDoc OpenAPI / Swagger UI |
-| Build | Maven |
-| Utilitarios | Lombok |
-| Container | Docker + docker-compose |
-
-## Estrutura de pastas
-
-```
-gestao-residuos-esg/
-├── src/
-│   └── main/
-│       ├── java/br/com/fiap/gestaoresiduos/
-│       │   ├── GestaoResiduosApplication.java
-│       │   ├── config/          (Security, OpenAPI, DataSeeder)
-│       │   ├── controller/      (REST controllers)
-│       │   ├── dto/             (DTOs de request e response)
-│       │   ├── exception/       (RuntimeException + handler global)
-│       │   ├── mapper/          (Conversores entity <-> DTO manuais)
-│       │   ├── model/           (Entidades JPA + enums)
-│       │   ├── repository/      (Spring Data Repositories)
-│       │   ├── security/        (JwtService + filtro)
-│       │   └── service/         (Regras de negocio)
-│       └── resources/
-│           ├── application.yml
-│           └── db/migration/
-│               ├── V1__create_tables.sql
-│               └── V2__insert_seed_data.sql
-├── Dockerfile
-├── docker-compose.yml
-├── .dockerignore
-├── pom.xml
-├── README.md
-└── insomnia_collection.json
-```
-
-## Como executar com Docker
-
-Pre-requisitos: Docker Desktop instalado e rodando.
+1. Copie o arquivo de variáveis de ambiente:
 
 ```bash
-docker-compose up --build
+cp .env.example .env
 ```
 
-O comando faz:
-1. Sobe o Oracle XE 21 e aguarda o healthcheck ficar saudavel (pode levar de 1 a 3 minutos na primeira vez).
-2. Builda a imagem da aplicacao (multi-stage Maven + JRE).
-3. Sobe o microsservico na porta `8080`.
-
-Apos subir:
-- API: `http://localhost:8080`
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
-- Oracle: `localhost:1521` (service `XEPDB1`, user `system`, senha `oracle`)
-
-Para parar:
-```bash
-docker-compose down
-```
-
-Para resetar tudo (inclui dados do banco):
-```bash
-docker-compose down -v
-```
-
-## Como executar localmente (sem Docker)
-
-Pre-requisitos: Java 17, Maven 3.9+, instancia Oracle XE acessivel.
+2. Suba o banco e a aplicação:
 
 ```bash
-# Defina as variaveis de ambiente apontando pro seu Oracle
-export ORACLE_URL="jdbc:oracle:thin:@//localhost:1521/XEPDB1"
-export ORACLE_USER="system"
-export ORACLE_PASSWORD="oracle"
-
-mvn spring-boot:run
+docker compose up --build
 ```
 
-## Usuarios padroes (criados no startup)
+O compose sobe dois serviços na rede `residuos-net`:
+- `db`: PostgreSQL 16 (alpine), com os dados guardados no volume `postgres_data`. Tem healthcheck com `pg_isready`.
+- `app`: a API, que só sobe depois que o banco estiver saudável. Na subida o Flyway cria as tabelas e os dados de exemplo.
+
+3. Teste se está funcionando:
+
+```bash
+# health check
+curl http://localhost:8080/actuator/health
+
+# login com o usuario admin (criado automaticamente)
+curl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@fiap.com", "senha": "admin123"}'
+```
+
+Swagger: `http://localhost:8080/swagger-ui.html`
+
+Usuários criados na subida:
 
 | Email | Senha | Role |
 |-------|-------|------|
 | `admin@fiap.com` | `admin123` | ADMIN |
 | `user@fiap.com` | `user123` | USER |
 
-Voce tambem pode registrar novos usuarios em `POST /auth/register`.
+Para parar: `docker compose down` (ou `docker compose down -v` para apagar também os dados do banco).
 
-## Tabela de endpoints
+Para rodar só os testes, sem Docker (precisa de Java 17 e Maven):
+
+```bash
+mvn verify
+```
+
+Os testes usam o perfil `test`, com banco H2 em memória.
+
+## Pipeline CI/CD
+
+A pipeline fica em `.github/workflows/ci-cd.yml` e roda no **GitHub Actions**. Ela dispara em todo push e pull request para a branch `main`.
+
+Etapas:
+
+1. **build-e-testes**: faz o checkout, configura o Java 17, roda `mvn -B verify` (compila e executa os testes automatizados), guarda o `.jar` como artefato e faz o `docker build` da imagem para garantir que o Dockerfile está funcionando. Em pull request a pipeline para aqui.
+2. **deploy-staging**: só roda em push na `main` e depois que os testes passaram. Ele atualiza a branch `staging` com o commit da main. O Render está configurado para fazer deploy automático dessa branch. Depois o job faz um smoke test chamando `/actuator/health` até 20 vezes, com 30 segundos de intervalo.
+3. **deploy-producao**: roda depois do staging. Usa o environment `production` do GitHub, que tem aprovação manual, então o job fica esperando alguém aprovar. Depois de aprovado ele atualiza a branch `release`, que é a branch de produção no Render, e faz o mesmo smoke test.
+
+Ambientes:
+
+| Ambiente | Branch | Onde roda | Banco |
+|----------|--------|-----------|-------|
+| Local | qualquer | Docker Compose | Postgres em container |
+| Staging | `staging` | Render (web service com Docker) | Postgres do Render |
+| Produção | `release` | Render (web service com Docker) | Postgres do Render |
+
+Configuração feita fora do código:
+- **GitHub**: environments `staging` e `production` (o de produção com *required reviewers*) e as variáveis `STAGING_URL` e `PRODUCTION_URL` com a URL de cada serviço no Render.
+- **Render**: um web service para cada ambiente, apontando para a branch certa, com auto-deploy ligado e as variáveis `DB_URL`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET` e `JWT_EXPIRATION`. O `DB_URL` tem que estar no formato JDBC (`jdbc:postgresql://host:5432/banco`).
+
+A pipeline não usa nenhum segredo além do `GITHUB_TOKEN` padrão, porque o deploy é feito pelo próprio Render quando a branch muda.
+
+## Containerização
+
+Dockerfile usado no projeto:
+
+```dockerfile
+# ---------- Build stage ----------
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+COPY src ./src
+RUN mvn clean package -DskipTests -B
+
+# ---------- Runtime stage ----------
+FROM eclipse-temurin:17-jre-jammy
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+```
+
+O Dockerfile é multi-stage. O primeiro estágio usa a imagem do Maven com JDK 17 para baixar as dependências e gerar o `.jar` (os testes não rodam aqui porque já rodam na pipeline). O segundo estágio usa só o JRE 17 e copia apenas o `.jar` gerado, então a imagem final fica bem menor e não leva o Maven nem o código fonte. Copiar o `pom.xml` antes do `src` faz o Docker reaproveitar a camada das dependências quando só o código muda.
+
+## Prints do funcionamento
+
+### Pipeline rodando no GitHub Actions
+
+(print será adicionado)
+
+### Aprovação manual do deploy em produção
+
+(print será adicionado)
+
+### Staging no Swagger
+
+(print será adicionado)
+
+### Produção no Swagger
+
+(print será adicionado)
+
+### Docker Compose rodando localmente
+
+(print será adicionado)
+
+## Tecnologias utilizadas
+
+| Camada | Tecnologia |
+|--------|------------|
+| Linguagem | Java 17 |
+| Framework | Spring Boot 3.2 |
+| Web | Spring Web (REST) |
+| Persistência | Spring Data JPA + Hibernate |
+| Banco de dados | PostgreSQL 16 |
+| Migrações | Flyway |
+| Segurança | Spring Security + JWT (jjwt) |
+| Validação | Bean Validation |
+| Documentação | SpringDoc OpenAPI / Swagger UI |
+| Monitoramento | Spring Boot Actuator (health check) |
+| Testes | JUnit 5 + MockMvc + H2 |
+| Build | Maven |
+| Container | Docker + Docker Compose |
+| CI/CD | GitHub Actions |
+| Deploy | Render |
+
+## Endpoints da API
 
 ### Autenticacao (publico)
 
@@ -171,112 +213,14 @@ Voce tambem pode registrar novos usuarios em `POST /auth/register`.
 |--------|----------|-----------|------|
 | GET | `/indicadores/reciclagem` | Indicadores gerais agregados | USER/ADMIN |
 
-## Exemplo de uso
+## Checklist de entrega
 
-### 1. Registrar usuario (opcional, ja existe o admin)
-
-```bash
-curl -X POST http://localhost:8080/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nome": "Joao Paulo",
-    "email": "joao@fiap.com",
-    "senha": "senha123",
-    "role": "USER"
-  }'
-```
-
-### 2. Fazer login e obter token
-
-```bash
-curl -X POST http://localhost:8080/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@fiap.com",
-    "senha": "admin123"
-  }'
-```
-
-Resposta:
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiJ9...",
-  "tipo": "Bearer",
-  "email": "admin@fiap.com",
-  "role": "ADMIN",
-  "expiracaoMs": 86400000
-}
-```
-
-### 3. Requisicao autenticada (criar ponto de coleta)
-
-```bash
-TOKEN="eyJhbGciOiJIUzI1NiJ9..."
-
-curl -X POST http://localhost:8080/pontos-coleta \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nome": "Ecoponto Oeste",
-    "endereco": "Av. Paulista, 1500",
-    "tipoResiduo": "PLASTICO",
-    "capacidadeMaximaKg": 500,
-    "nivelAtualKg": 0,
-    "empresaId": 1
-  }'
-```
-
-### 4. Verificar alertas de pontos com 80%+ da capacidade
-
-```bash
-curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8080/pontos-coleta/alertas
-```
-
-### 5. Indicadores agregados
-
-```bash
-curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8080/indicadores/reciclagem
-```
-
-## Tratamento de erros
-
-Todas as respostas de erro seguem o formato:
-
-```json
-{
-  "timestamp": "2026-05-25T20:15:30",
-  "status": 400,
-  "error": "Bad Request",
-  "message": "Dados invalidos na requisicao",
-  "path": "/empresas",
-  "detalhes": ["cnpj: CNPJ deve estar no formato 00.000.000/0000-00"]
-}
-```
-
-Codigos tratados pelo `GlobalExceptionHandler`:
-- `400` - Validacao de campos (Bean Validation)
-- `401` - Credenciais invalidas no login
-- `403` - Sem permissao (role insuficiente)
-- `404` - Recurso nao encontrado
-- `409` - Violacao de integridade (ex: CNPJ duplicado)
-- `500` - Erro generico nao tratado
-
-## Collection do Insomnia
-
-O arquivo `insomnia_collection.json` esta na raiz do projeto. Para importar:
-1. Abra o Insomnia
-2. `Application` -> `Preferences` -> `Data` -> `Import Data` -> `From File`
-3. Selecione `insomnia_collection.json`
-4. As variaveis `baseUrl` (default `http://localhost:8080`) e `token` ja vem configuradas no environment "Local"
-
-A collection esta organizada em pastas: Auth, Empresas, Pontos de Coleta, Residuos, Coletas e Indicadores.
-
-## Documentacao da API (Swagger)
-
-Apos subir a aplicacao:
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
-- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
-
-Para testar endpoints autenticados pelo Swagger, clique em **Authorize** e cole o token JWT obtido no login (sem o prefixo `Bearer`).
+| Item | Status |
+|------|--------|
+| Projeto compactado em .ZIP com estrutura organizada | [ ] |
+| Dockerfile funcional | [x] |
+| docker-compose.yml ou arquivos Kubernetes | [x] |
+| Pipeline com etapas de build, teste e deploy | [x] |
+| README.md com instruções e prints | [ ] |
+| Documentação técnica com evidências (PDF ou PPT) | [ ] |
+| Deploy realizado nos ambientes staging e produção | [ ] |
