@@ -1,0 +1,54 @@
+$ actions/checkout@v4
+$ printf "DB_USER=residuos_prod\nDB_PASSWORD=%s\nPOSTGRES_USER=residuos_prod\nPOSTGRES_PASSWORD=%s\nJWT_SECRET=%s\nJWT_EXPIRATION=86400000\n" \
+$ docker compose -f docker-compose.prod.yml up -d --build
+$ for i in $(seq 1 30); do
+{"status":"UP"}
+Aplicacao no ar
+$ RESPOSTA=$(curl -fsS -X POST localhost:8080/auth/login \
+{"token":"***
+$ docker compose -f docker-compose.prod.yml ps
+NAME                IMAGE                COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+residuos-prod-app   residuos-prod-app    "java -jar /app/app.…"   app       16 seconds ago   Up 10 seconds             0.0.0.0:8080->8080/tcp, [::]:
+residuos-prod-db    postgres:16-alpine   "docker-entrypoint.s…"   db        16 seconds ago   Up 16 seconds (healthy)   5432/tcp
+$ docker compose -f docker-compose.prod.yml logs app | tail -n 40
+residuos-prod-app  | 2026-10-13T21:56:39.945Z  INFO 1 --- [gestao-residuos-esg] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrap
+residuos-prod-app  | 2026-10-13T21:56:40.014Z  INFO 1 --- [gestao-residuos-esg] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished 
+residuos-prod-app  | 2026-10-13T21:56:40.828Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat in
+residuos-prod-app  | 2026-10-13T21:56:40.841Z  INFO 1 --- [gestao-residuos-esg] [           main] o.apache.catalina.core.StandardService   : Starting 
+residuos-prod-app  | 2026-10-13T21:56:40.842Z  INFO 1 --- [gestao-residuos-esg] [           main] o.apache.catalina.core.StandardEngine    : Starting 
+residuos-prod-app  | 2026-10-13T21:56:40.901Z  INFO 1 --- [gestao-residuos-esg] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializ
+residuos-prod-app  | 2026-10-13T21:56:40.902Z  INFO 1 --- [gestao-residuos-esg] [           main] w.s.c.ServletWebServerApplicationContext : Root WebA
+residuos-prod-app  | 2026-10-13T21:56:41.166Z  INFO 1 --- [gestao-residuos-esg] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPoo
+residuos-prod-app  | 2026-10-13T21:56:41.406Z  INFO 1 --- [gestao-residuos-esg] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPoo
+residuos-prod-app  | 2026-10-13T21:56:41.408Z  INFO 1 --- [gestao-residuos-esg] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPoo
+residuos-prod-app  | 2026-10-13T21:56:41.504Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.internal.license.VersionPrinter    : Flyway Co
+residuos-prod-app  | 2026-10-13T21:56:41.504Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.internal.license.VersionPrinter    : See relea
+residuos-prod-app  | 2026-10-13T21:56:41.504Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.internal.license.VersionPrinter    : 
+residuos-prod-app  | 2026-10-13T21:56:41.526Z  INFO 1 --- [gestao-residuos-esg] [           main] org.flywaydb.core.FlywayExecutor         : Database:
+residuos-prod-app  | 2026-10-13T21:56:41.539Z  WARN 1 --- [gestao-residuos-esg] [           main] o.f.c.internal.database.base.Database    : Flyway up
+residuos-prod-app  | 2026-10-13T21:56:41.588Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema hi
+residuos-prod-app  | 2026-10-13T21:56:41.595Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbValidate     : Successfu
+residuos-prod-app  | 2026-10-13T21:56:41.615Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating 
+residuos-prod-app  | 2026-10-13T21:56:41.670Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbMigrate      : Current v
+residuos-prod-app  | 2026-10-13T21:56:41.700Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbMigrate      : Migrating
+residuos-prod-app  | 2026-10-13T21:56:41.790Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbMigrate      : Migrating
+residuos-prod-app  | 2026-10-13T21:56:41.816Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbMigrate      : Successfu
+residuos-prod-app  | 2026-10-13T21:56:41.910Z  INFO 1 --- [gestao-residuos-esg] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204
+residuos-prod-app  | 2026-10-13T21:56:41.988Z  INFO 1 --- [gestao-residuos-esg] [           main] org.hibernate.Version                    : HHH000412
+residuos-prod-app  | 2026-10-13T21:56:42.029Z  INFO 1 --- [gestao-residuos-esg] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026
+residuos-prod-app  | 2026-10-13T21:56:42.275Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTi
+residuos-prod-app  | 2026-10-13T21:56:42.335Z  WARN 1 --- [gestao-residuos-esg] [           main] org.hibernate.orm.deprecation            : HHH900000
+residuos-prod-app  | 2026-10-13T21:56:43.214Z  INFO 1 --- [gestao-residuos-esg] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489
+residuos-prod-app  | 2026-10-13T21:56:43.249Z  INFO 1 --- [gestao-residuos-esg] [           main] j.LocalContainerEntityManagerFactoryBean : Initializ
+residuos-prod-app  | 2026-10-13T21:56:43.757Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate
+residuos-prod-app  | 2026-10-13T21:56:44.712Z  WARN 1 --- [gestao-residuos-esg] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jp
+residuos-prod-app  | 2026-10-13T21:56:45.161Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 
+residuos-prod-app  | 2026-10-13T21:56:45.760Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat st
+residuos-prod-app  | 2026-10-13T21:56:45.790Z  INFO 1 --- [gestao-residuos-esg] [           main] b.c.f.g.GestaoResiduosApplication        : Started G
+residuos-prod-app  | 2026-10-13T21:56:46.130Z  INFO 1 --- [gestao-residuos-esg] [           main] b.c.f.gestaoresiduos.config.DataSeeder   : Usuario a
+residuos-prod-app  | 2026-10-13T21:56:46.231Z  INFO 1 --- [gestao-residuos-esg] [           main] b.c.f.gestaoresiduos.config.DataSeeder   : Usuario p
+residuos-prod-app  | 2026-10-13T21:56:47.183Z  INFO 1 --- [gestao-residuos-esg] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializ
+residuos-prod-app  | 2026-10-13T21:56:47.184Z  INFO 1 --- [gestao-residuos-esg] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializ
+residuos-prod-app  | 2026-10-13T21:56:47.185Z  INFO 1 --- [gestao-residuos-esg] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed
+residuos-prod-app  | 2026-10-13T21:56:47.440Z  INFO 1 --- [gestao-residuos-esg] [nio-8080-exec-2] b.c.f.g.service.AuthService              : Login: ad
+$ docker compose -f docker-compose.prod.yml down -v

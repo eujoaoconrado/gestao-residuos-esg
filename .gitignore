@@ -27,3 +27,4 @@ logs/
 .env
 .env.staging
 .env.prod
+docs/documentacao.html
