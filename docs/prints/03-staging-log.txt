@@ -8,47 +8,47 @@ $ RESPOSTA=$(curl -fsS -X POST localhost:8081/auth/login \
 {"token":"***
 $ docker compose -f docker-compose.staging.yml ps
 NAME                   IMAGE                  COMMAND                  SERVICE   CREATED          STATUS                    PORTS
-residuos-staging-app   residuos-staging-app   "java -jar /app/app.…"   app       17 seconds ago   Up 10 seconds             0.0.0.0:8081->8080/tcp, 
-residuos-staging-db    postgres:16-alpine     "docker-entrypoint.s…"   db        17 seconds ago   Up 16 seconds (healthy)   5432/tcp
+residuos-staging-app   residuos-staging-app   "java -jar /app/app.…"   app       16 seconds ago   Up 10 seconds             0.0.0.0:8081->8080/tcp, 
+residuos-staging-db    postgres:16-alpine     "docker-entrypoint.s…"   db        16 seconds ago   Up 16 seconds (healthy)   5432/tcp
 $ docker compose -f docker-compose.staging.yml logs app | tail -n 40
-residuos-staging-app  | 2026-10-13T21:24:22.952Z  INFO 1 --- [gestao-residuos-esg] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootst
-residuos-staging-app  | 2026-10-13T21:24:23.009Z  INFO 1 --- [gestao-residuos-esg] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finish
-residuos-staging-app  | 2026-10-13T21:24:23.606Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat
-residuos-staging-app  | 2026-10-13T21:24:23.613Z  INFO 1 --- [gestao-residuos-esg] [           main] o.apache.catalina.core.StandardService   : Starti
-residuos-staging-app  | 2026-10-13T21:24:23.614Z  INFO 1 --- [gestao-residuos-esg] [           main] o.apache.catalina.core.StandardEngine    : Starti
-residuos-staging-app  | 2026-10-13T21:24:23.651Z  INFO 1 --- [gestao-residuos-esg] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initia
-residuos-staging-app  | 2026-10-13T21:24:23.652Z  INFO 1 --- [gestao-residuos-esg] [           main] w.s.c.ServletWebServerApplicationContext : Root W
-residuos-staging-app  | 2026-10-13T21:24:23.821Z  INFO 1 --- [gestao-residuos-esg] [           main] com.zaxxer.hikari.HikariDataSource       : Hikari
-residuos-staging-app  | 2026-10-13T21:24:23.963Z  INFO 1 --- [gestao-residuos-esg] [           main] com.zaxxer.hikari.pool.HikariPool        : Hikari
-residuos-staging-app  | 2026-10-13T21:24:23.964Z  INFO 1 --- [gestao-residuos-esg] [           main] com.zaxxer.hikari.HikariDataSource       : Hikari
-residuos-staging-app  | 2026-10-13T21:24:24.036Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.internal.license.VersionPrinter    : Flyway
-residuos-staging-app  | 2026-10-13T21:24:24.036Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.internal.license.VersionPrinter    : See re
-residuos-staging-app  | 2026-10-13T21:24:24.036Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.internal.license.VersionPrinter    : 
-residuos-staging-app  | 2026-10-13T21:24:24.046Z  INFO 1 --- [gestao-residuos-esg] [           main] org.flywaydb.core.FlywayExecutor         : Databa
-residuos-staging-app  | 2026-10-13T21:24:24.050Z  WARN 1 --- [gestao-residuos-esg] [           main] o.f.c.internal.database.base.Database    : Flyway
-residuos-staging-app  | 2026-10-13T21:24:24.068Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema
-residuos-staging-app  | 2026-10-13T21:24:24.072Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbValidate     : Succes
-residuos-staging-app  | 2026-10-13T21:24:24.084Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creati
-residuos-staging-app  | 2026-10-13T21:24:24.120Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbMigrate      : Curren
-residuos-staging-app  | 2026-10-13T21:24:24.136Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbMigrate      : Migrat
-residuos-staging-app  | 2026-10-13T21:24:24.195Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbMigrate      : Migrat
-residuos-staging-app  | 2026-10-13T21:24:24.215Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbMigrate      : Succes
-residuos-staging-app  | 2026-10-13T21:24:24.295Z  INFO 1 --- [gestao-residuos-esg] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000
-residuos-staging-app  | 2026-10-13T21:24:24.350Z  INFO 1 --- [gestao-residuos-esg] [           main] org.hibernate.Version                    : HHH000
-residuos-staging-app  | 2026-10-13T21:24:24.380Z  INFO 1 --- [gestao-residuos-esg] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000
-residuos-staging-app  | 2026-10-13T21:24:24.589Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No Loa
-residuos-staging-app  | 2026-10-13T21:24:24.624Z  WARN 1 --- [gestao-residuos-esg] [           main] org.hibernate.orm.deprecation            : HHH900
-residuos-staging-app  | 2026-10-13T21:24:25.330Z  INFO 1 --- [gestao-residuos-esg] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000
-residuos-staging-app  | 2026-10-13T21:24:25.355Z  INFO 1 --- [gestao-residuos-esg] [           main] j.LocalContainerEntityManagerFactoryBean : Initia
-residuos-staging-app  | 2026-10-13T21:24:25.670Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibern
-residuos-staging-app  | 2026-10-13T21:24:26.218Z  WARN 1 --- [gestao-residuos-esg] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring
-residuos-staging-app  | 2026-10-13T21:24:26.527Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposi
-residuos-staging-app  | 2026-10-13T21:24:26.974Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat
-residuos-staging-app  | 2026-10-13T21:24:26.989Z  INFO 1 --- [gestao-residuos-esg] [           main] b.c.f.g.GestaoResiduosApplication        : Starte
-residuos-staging-app  | 2026-10-13T21:24:27.242Z  INFO 1 --- [gestao-residuos-esg] [           main] b.c.f.gestaoresiduos.config.DataSeeder   : Usuari
-residuos-staging-app  | 2026-10-13T21:24:27.314Z  INFO 1 --- [gestao-residuos-esg] [           main] b.c.f.gestaoresiduos.config.DataSeeder   : Usuari
-residuos-staging-app  | 2026-10-13T21:24:30.713Z  INFO 1 --- [gestao-residuos-esg] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initia
-residuos-staging-app  | 2026-10-13T21:24:30.714Z  INFO 1 --- [gestao-residuos-esg] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initia
-residuos-staging-app  | 2026-10-13T21:24:30.715Z  INFO 1 --- [gestao-residuos-esg] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Comple
-residuos-staging-app  | 2026-10-13T21:24:30.910Z  INFO 1 --- [gestao-residuos-esg] [nio-8080-exec-3] b.c.f.g.service.AuthService              : Login:
+residuos-staging-app  | 2026-10-13T22:03:54.772Z  INFO 1 --- [gestao-residuos-esg] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootst
+residuos-staging-app  | 2026-10-13T22:03:54.833Z  INFO 1 --- [gestao-residuos-esg] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finish
+residuos-staging-app  | 2026-10-13T22:03:55.591Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat
+residuos-staging-app  | 2026-10-13T22:03:55.600Z  INFO 1 --- [gestao-residuos-esg] [           main] o.apache.catalina.core.StandardService   : Starti
+residuos-staging-app  | 2026-10-13T22:03:55.601Z  INFO 1 --- [gestao-residuos-esg] [           main] o.apache.catalina.core.StandardEngine    : Starti
+residuos-staging-app  | 2026-10-13T22:03:55.645Z  INFO 1 --- [gestao-residuos-esg] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initia
+residuos-staging-app  | 2026-10-13T22:03:55.647Z  INFO 1 --- [gestao-residuos-esg] [           main] w.s.c.ServletWebServerApplicationContext : Root W
+residuos-staging-app  | 2026-10-13T22:03:55.875Z  INFO 1 --- [gestao-residuos-esg] [           main] com.zaxxer.hikari.HikariDataSource       : Hikari
+residuos-staging-app  | 2026-10-13T22:03:56.088Z  INFO 1 --- [gestao-residuos-esg] [           main] com.zaxxer.hikari.pool.HikariPool        : Hikari
+residuos-staging-app  | 2026-10-13T22:03:56.090Z  INFO 1 --- [gestao-residuos-esg] [           main] com.zaxxer.hikari.HikariDataSource       : Hikari
+residuos-staging-app  | 2026-10-13T22:03:56.208Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.internal.license.VersionPrinter    : Flyway
+residuos-staging-app  | 2026-10-13T22:03:56.208Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.internal.license.VersionPrinter    : See re
+residuos-staging-app  | 2026-10-13T22:03:56.208Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.internal.license.VersionPrinter    : 
+residuos-staging-app  | 2026-10-13T22:03:56.226Z  INFO 1 --- [gestao-residuos-esg] [           main] org.flywaydb.core.FlywayExecutor         : Databa
+residuos-staging-app  | 2026-10-13T22:03:56.234Z  WARN 1 --- [gestao-residuos-esg] [           main] o.f.c.internal.database.base.Database    : Flyway
+residuos-staging-app  | 2026-10-13T22:03:56.266Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema
+residuos-staging-app  | 2026-10-13T22:03:56.270Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbValidate     : Succes
+residuos-staging-app  | 2026-10-13T22:03:56.287Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creati
+residuos-staging-app  | 2026-10-13T22:03:56.328Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbMigrate      : Curren
+residuos-staging-app  | 2026-10-13T22:03:56.344Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbMigrate      : Migrat
+residuos-staging-app  | 2026-10-13T22:03:56.432Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbMigrate      : Migrat
+residuos-staging-app  | 2026-10-13T22:03:56.465Z  INFO 1 --- [gestao-residuos-esg] [           main] o.f.core.internal.command.DbMigrate      : Succes
+residuos-staging-app  | 2026-10-13T22:03:56.588Z  INFO 1 --- [gestao-residuos-esg] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000
+residuos-staging-app  | 2026-10-13T22:03:56.653Z  INFO 1 --- [gestao-residuos-esg] [           main] org.hibernate.Version                    : HHH000
+residuos-staging-app  | 2026-10-13T22:03:56.693Z  INFO 1 --- [gestao-residuos-esg] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000
+residuos-staging-app  | 2026-10-13T22:03:56.973Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No Loa
+residuos-staging-app  | 2026-10-13T22:03:57.028Z  WARN 1 --- [gestao-residuos-esg] [           main] org.hibernate.orm.deprecation            : HHH900
+residuos-staging-app  | 2026-10-13T22:03:57.967Z  INFO 1 --- [gestao-residuos-esg] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000
+residuos-staging-app  | 2026-10-13T22:03:57.996Z  INFO 1 --- [gestao-residuos-esg] [           main] j.LocalContainerEntityManagerFactoryBean : Initia
+residuos-staging-app  | 2026-10-13T22:03:58.363Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibern
+residuos-staging-app  | 2026-10-13T22:03:59.036Z  WARN 1 --- [gestao-residuos-esg] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring
+residuos-staging-app  | 2026-10-13T22:03:59.440Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposi
+residuos-staging-app  | 2026-10-13T22:04:00.042Z  INFO 1 --- [gestao-residuos-esg] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat
+residuos-staging-app  | 2026-10-13T22:04:00.063Z  INFO 1 --- [gestao-residuos-esg] [           main] b.c.f.g.GestaoResiduosApplication        : Starte
+residuos-staging-app  | 2026-10-13T22:04:00.387Z  INFO 1 --- [gestao-residuos-esg] [           main] b.c.f.gestaoresiduos.config.DataSeeder   : Usuari
+residuos-staging-app  | 2026-10-13T22:04:00.473Z  INFO 1 --- [gestao-residuos-esg] [           main] b.c.f.gestaoresiduos.config.DataSeeder   : Usuari
+residuos-staging-app  | 2026-10-13T22:04:02.141Z  INFO 1 --- [gestao-residuos-esg] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initia
+residuos-staging-app  | 2026-10-13T22:04:02.141Z  INFO 1 --- [gestao-residuos-esg] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initia
+residuos-staging-app  | 2026-10-13T22:04:02.143Z  INFO 1 --- [gestao-residuos-esg] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Comple
+residuos-staging-app  | 2026-10-13T22:04:02.346Z  INFO 1 --- [gestao-residuos-esg] [nio-8080-exec-3] b.c.f.g.service.AuthService              : Login:
 $ docker compose -f docker-compose.staging.yml down -v

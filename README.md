@@ -136,7 +136,7 @@ O Dockerfile é multi-stage. O primeiro estágio usa a imagem do Maven com JDK 1
 
 ## Prints do funcionamento
 
-Run do pipeline usado nos prints: https://github.com/eujoaoconrado/gestao-residuos-esg/actions/runs/38469841023
+Run do pipeline usado nos prints: https://github.com/eujoaoconrado/gestao-residuos-esg/actions/runs/38474803117
 
 ### Pipeline rodando no GitHub Actions
 
@@ -165,15 +165,14 @@ Deploy de produção aprovado manualmente no environment `production`.
 Log do job de staging: health check, login e containers no ar.
 
 ```text
-$ for i in $(seq 1 30); do
 {"status":"UP"}
 Aplicacao no ar
 $ RESPOSTA=$(curl -fsS -X POST localhost:8081/auth/login \
 {"token":"***
 $ docker compose -f docker-compose.staging.yml ps
 NAME                   IMAGE                  COMMAND                  SERVICE   CREATED          STATUS                    PORTS
-residuos-staging-app   residuos-staging-app   "java -jar /app/app.…"   app       17 seconds ago   Up 10 seconds             0.0.0.0:8081->8080/tcp,
-residuos-staging-db    postgres:16-alpine     "docker-entrypoint.s…"   db        17 seconds ago   Up 16 seconds (healthy)   5432/tcp
+residuos-staging-app   residuos-staging-app   "java -jar /app/app.…"   app       16 seconds ago   Up 10 seconds             0.0.0.0:8081->8080/tcp,
+residuos-staging-db    postgres:16-alpine     "docker-entrypoint.s…"   db        16 seconds ago   Up 16 seconds (healthy)   5432/tcp
 ```
 
 ### Ambiente de produção (health e login)
@@ -183,15 +182,14 @@ residuos-staging-db    postgres:16-alpine     "docker-entrypoint.s…"   db     
 Log do job de produção: health check, login e containers no ar.
 
 ```text
-$ for i in $(seq 1 30); do
 {"status":"UP"}
 Aplicacao no ar
 $ RESPOSTA=$(curl -fsS -X POST localhost:8080/auth/login \
 {"token":"***
 $ docker compose -f docker-compose.prod.yml ps
 NAME                IMAGE                COMMAND                  SERVICE   CREATED          STATUS                    PORTS
-residuos-prod-app   residuos-prod-app    "java -jar /app/app.…"   app       16 seconds ago   Up 10 seconds             0.0.0.0:8080->8080/tcp, [::]:
-residuos-prod-db    postgres:16-alpine   "docker-entrypoint.s…"   db        16 seconds ago   Up 16 seconds (healthy)   5432/tcp
+residuos-prod-app   residuos-prod-app    "java -jar /app/app.…"   app       17 seconds ago   Up 11 seconds             0.0.0.0:8080->8080/tcp, [::]:
+residuos-prod-db    postgres:16-alpine   "docker-entrypoint.s…"   db        17 seconds ago   Up 16 seconds (healthy)   5432/tcp
 ```
 
 ### Docker Compose rodando localmente

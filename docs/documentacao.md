@@ -116,6 +116,8 @@ ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 
 ## 3. Prints do pipeline rodando (build, testes, deploy)
 
+Run do pipeline usado nos prints: <https://github.com/eujoaoconrado/gestao-residuos-esg/actions/runs/38474803117>
+
 ![Pipeline com build e staging concluídos, aguardando a aprovação de produção](prints/01-pipeline-aguardando-aprovacao.jpg){width=600px}
 
 ![Pipeline completo, com os três jobs concluídos](prints/06-pipeline-completo.jpg){width=600px}
@@ -135,15 +137,14 @@ ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 Trecho do log do job de staging (health check, login e containers):
 
 ```text
-$ for i in $(seq 1 30); do
 {"status":"UP"}
 Aplicacao no ar
 $ RESPOSTA=$(curl -fsS -X POST localhost:8081/auth/login \
 {"token":"***
 $ docker compose -f docker-compose.staging.yml ps
 NAME                   IMAGE                  COMMAND                  SERVICE   CREATED          STATUS                    PORTS
-residuos-staging-app   residuos-staging-app   "java -jar /app/app.…"   app       17 seconds ago   Up 10 seconds             0.0.0.0:8081->8080/tcp,
-residuos-staging-db    postgres:16-alpine     "docker-entrypoint.s…"   db        17 seconds ago   Up 16 seconds (healthy)   5432/tcp
+residuos-staging-app   residuos-staging-app   "java -jar /app/app.…"   app       16 seconds ago   Up 10 seconds             0.0.0.0:8081->8080/tcp,
+residuos-staging-db    postgres:16-alpine     "docker-entrypoint.s…"   db        16 seconds ago   Up 16 seconds (healthy)   5432/tcp
 ```
 
 ## 5. Desafios encontrados e como foram resolvidos
