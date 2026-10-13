@@ -22,3 +22,6 @@ logs/
 
 # Maven
 .mvn/wrapper/maven-wrapper.jar
+
+# Variaveis de ambiente
+.env
